@@ -1,3 +1,7 @@
+import exception.LineTooLongException;
+import logic.FileAnalyzer;
+import logic.FileValidator;
+
 import java.io.File;
 import java.util.Scanner;
 
@@ -8,15 +12,20 @@ public class Main {
         while (true) {
             System.out.print("Введите путь к файлу: ");
             String path = scanner.nextLine();
-            File file = new File(path);
-            boolean fileExists = file.exists();
-            boolean isDirectory = file.isDirectory();
-            if (!fileExists || isDirectory) {
+
+            if (!FileValidator.isValidFile(path)) {
                 System.out.println("Путь указан неверно: либо файл не существует, либо это не файл, а папка.");
                 continue;
             }
             validFileCount++;
             System.out.println("Путь указан верно. Это файл номер " + validFileCount);
+            try {
+                FileAnalyzer.analyze(path);
+            } catch (LineTooLongException e) {
+                System.err.println("ОШИБКА: " + e.getMessage());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
