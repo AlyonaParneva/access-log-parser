@@ -1,6 +1,7 @@
 import exception.LineTooLongException;
 import logic.FileAnalyzer;
 import logic.FileValidator;
+import logic.Statistics;
 
 import java.io.File;
 import java.util.Scanner;
@@ -20,7 +21,12 @@ public class Main {
             validFileCount++;
             System.out.println("Путь указан верно. Это файл номер " + validFileCount);
             try {
-                FileAnalyzer.analyze(path);
+                Statistics stats = FileAnalyzer.analyze(path);
+
+                System.out.println("Среднее посещений в час (без ботов): " + stats.getAvgVisitsPerHour());
+                System.out.println("Среднее ошибочных запросов в час: " + stats.getAvgErrorsPerHour());
+                System.out.println("Средняя посещаемость одним пользователем: " + stats.getAvgVisitsPerUser());
+
             } catch (LineTooLongException e) {
                 System.err.println("ОШИБКА: " + e.getMessage());
             } catch (Exception e) {

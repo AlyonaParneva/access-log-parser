@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class FileAnalyzer {
-    public static void analyze(String path) throws Exception {
+    public static Statistics analyze(String path) throws Exception {
         File file = new File(path);
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
@@ -29,5 +29,7 @@ public class FileAnalyzer {
 
         System.out.println("Общий трафик: " + statistics.getTotalTraffic() + " байт");
         System.out.println("Средняя скорость трафика: " + statistics.getTrafficRate() + " байт/час");
+
+        return statistics;
     }
 }

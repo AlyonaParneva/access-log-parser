@@ -2,10 +2,7 @@ package logic;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Statistics {
     private long totalTraffic = 0;
@@ -17,7 +14,15 @@ public class Statistics {
     private Map<String, Integer> osCount = new HashMap<>();
     private Map<String, Integer> browserCount = new HashMap<>();
 
+    private List<LogEntry> entries = new ArrayList<>();
+    private int errorRequestCount = 0;
+    private int realVisitCount = 0;
+    private Set<String> realUserIps = new HashSet<>();
+
+
     public void addEntry(LogEntry entry) {
+        entries.add(entry);
+
         int size = entry.getResponseSize();
         if (size < 0) size = 0;
         totalTraffic += size;
@@ -30,6 +35,17 @@ public class Statistics {
             if (maxTime == null || timestamp.isAfter(maxTime)) {
                 maxTime = timestamp;
             }
+        }
+
+        int code = entry.getResponseCode();
+        if (code >= 400 && code <= 599) {
+            errorRequestCount++;
+        }
+
+        String agent = entry.getUserAgent().toString().toLowerCase();
+        if (!agent.contains("bot")) {
+            realVisitCount++;
+            realUserIps.add(entry.getIp());
         }
 
         if (entry.getResponseCode() == 200) {
@@ -86,5 +102,22 @@ public class Statistics {
             result.put(entry.getKey(), entry.getValue() / (double) total);
         }
         return result;
+    }
+
+    public double getAvgVisitsPerHour() {
+        if (minTime == null || maxTime == null) return 0;
+        long hours = Duration.between(minTime, maxTime).toHours();
+        return hours > 0 ? (double) realVisitCount / hours : realVisitCount;
+    }
+
+    public double getAvgErrorsPerHour() {
+        if (minTime == null || maxTime == null) return 0;
+        long hours = Duration.between(minTime, maxTime).toHours();
+        return hours > 0 ? (double) errorRequestCount / hours : errorRequestCount;
+    }
+
+    public double getAvgVisitsPerUser() {
+        if (realUserIps.isEmpty()) return 0;
+        return (double) realVisitCount / realUserIps.size();
     }
 }
