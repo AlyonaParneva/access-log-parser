@@ -19,9 +19,15 @@ public class Statistics {
     private int realVisitCount = 0;
     private Set<String> realUserIps = new HashSet<>();
 
+    private Map<String, Integer> secondVisitCounts = new HashMap<>();
+    private Set<String> refererDomains = new HashSet<>();
+    private Map<String, Integer> userVisitCounts = new HashMap<>();
 
     public void addEntry(LogEntry entry) {
         entries.add(entry);
+
+        String userAgent = entry.getUserAgent().toString().toLowerCase();
+        boolean isBot = userAgent.contains("bot");
 
         int size = entry.getResponseSize();
         if (size < 0) size = 0;
@@ -64,6 +70,22 @@ public class Statistics {
         String browser = entry.getUserAgent().getBrowser();
         if (browser != null && !browser.isBlank()) {
             browserCount.put(browser, browserCount.getOrDefault(browser, 0) + 1);
+        }
+
+        if (!isBot) {
+            String secondKey = entry.getTimestamp().withNano(0).toString();
+            secondVisitCounts.put(secondKey, secondVisitCounts.getOrDefault(secondKey, 0) + 1);
+            String ip = entry.getIp();
+            userVisitCounts.put(ip, userVisitCounts.getOrDefault(ip, 0) + 1);
+        }
+
+        String referer = entry.getReferer();
+        if (referer != null && referer.startsWith("http")) {
+            try {
+                String domain = new java.net.URL(referer).getHost();
+                refererDomains.add(domain);
+            } catch (Exception e) {
+            }
         }
     }
 
@@ -119,5 +141,21 @@ public class Statistics {
     public double getAvgVisitsPerUser() {
         if (realUserIps.isEmpty()) return 0;
         return (double) realVisitCount / realUserIps.size();
+    }
+
+    public int getPeakVisitsPerSecond() {
+        return secondVisitCounts.values().stream()
+                .max(Integer::compareTo)
+                .orElse(0);
+    }
+
+    public Set<String> getRefererDomains() {
+        return refererDomains;
+    }
+
+    public int getMaxVisitsPerUser() {
+        return userVisitCounts.values().stream()
+                .max(Integer::compareTo)
+                .orElse(0);
     }
 }

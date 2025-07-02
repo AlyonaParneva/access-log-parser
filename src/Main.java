@@ -23,6 +23,11 @@ public class Main {
             try {
                 Statistics stats = FileAnalyzer.analyze(path);
 
+                System.out.println("Пиковая посещаемость в секунду: " + stats.getPeakVisitsPerSecond());
+                System.out.println("Максимальная активность одного пользователя: " + stats.getMaxVisitsPerUser());
+                System.out.println("Сайты-источники (рефереры):");
+                stats.getRefererDomains().forEach(System.out::println);
+
                 System.out.println("Среднее посещений в час (без ботов): " + stats.getAvgVisitsPerHour());
                 System.out.println("Среднее ошибочных запросов в час: " + stats.getAvgErrorsPerHour());
                 System.out.println("Средняя посещаемость одним пользователем: " + stats.getAvgVisitsPerUser());
