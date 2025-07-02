@@ -13,7 +13,9 @@ public class Statistics {
     private LocalDateTime maxTime = null;
 
     private Set<String> existingPages = new HashSet<>();
+    private Set<String> missingPages = new HashSet<>();
     private Map<String, Integer> osCount = new HashMap<>();
+    private Map<String, Integer> browserCount = new HashMap<>();
 
     public void addEntry(LogEntry entry) {
         int size = entry.getResponseSize();
@@ -34,9 +36,18 @@ public class Statistics {
             existingPages.add(entry.getRequestPath());
         }
 
+        if (entry.getResponseCode() == 404) {
+            missingPages.add(entry.getRequestPath());
+        }
+
         String os = entry.getUserAgent().getOs();
         if (os != null && !os.isBlank()) {
             osCount.put(os, osCount.getOrDefault(os, 0) + 1);
+        }
+
+        String browser = entry.getUserAgent().getBrowser();
+        if (browser != null && !browser.isBlank()) {
+            browserCount.put(browser, browserCount.getOrDefault(browser, 0) + 1);
         }
     }
 
@@ -55,14 +66,25 @@ public class Statistics {
         return existingPages;
     }
 
+    public Set<String> getMissingPages() {
+        return missingPages;
+    }
+
     public Map<String, Double> getOsStatistics() {
         Map<String, Double> result = new HashMap<>();
         int total = osCount.values().stream().mapToInt(Integer::intValue).sum();
-
         for (Map.Entry<String, Integer> entry : osCount.entrySet()) {
             result.put(entry.getKey(), entry.getValue() / (double) total);
         }
+        return result;
+    }
 
+    public Map<String, Double> getBrowserStatistics() {
+        Map<String, Double> result = new HashMap<>();
+        int total = browserCount.values().stream().mapToInt(Integer::intValue).sum();
+        for (Map.Entry<String, Integer> entry : browserCount.entrySet()) {
+            result.put(entry.getKey(), entry.getValue() / (double) total);
+        }
         return result;
     }
 }
