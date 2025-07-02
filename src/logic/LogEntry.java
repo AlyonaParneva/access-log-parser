@@ -70,4 +70,12 @@ public class LogEntry {
     public UserAgent getUserAgent() {
         return userAgent;
     }
+
+    public int getResponseCode() {
+        return statusCode;
+    }
+
+    public String getRequestPath() {
+        return path;
+    }
 }
